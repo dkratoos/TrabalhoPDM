@@ -48,7 +48,7 @@ function Cart(props) {
             </View>
           </View>
         )}
-        {cart.length > 1 ?
+        {cart.length > 0 ?
           <Text style={styles.buttonText}>Total a pagar: {cart
             .map(el => el.preco.replace(',','.'))
             .reduce((acc, curr) => parseFloat(curr) + parseFloat(acc))}

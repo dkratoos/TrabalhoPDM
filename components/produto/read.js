@@ -7,6 +7,8 @@ import Create from './create'
 import Delete from './delete'
 import Update from './update'
 import Cart from '../cart'
+import firebase from '../../firebaseconection'
+import { useEffect } from 'react'
 
 const Stack = createStackNavigator()
 
@@ -26,17 +28,60 @@ function Read({}) {
     setIsCreateProdutoModalOpen(!isCreateProdutoModalOpen)
   }
 
+  useEffect(() => {
+    firebase.db.collection('produtos').onSnapshot(querySnapshot => {
+      const produtos = []
+
+      querySnapshot.docs.forEach(doc => {
+        produtos.push({ ...doc.data(), id: doc.id })
+      })
+
+      setProdutos(produtos)
+    })
+  }, [])
+
   const createProduto = (data) => {
     data.id = produtos.length + 1
-    setProdutos([data, ...produtos])
+    createProdutoFirebase(data)
+    // setProdutos([data, ...produtos])
   }
 
-  const updateProduto = (data) => {
-    setProdutos(produtos.map(cli => cli.id == data.id ? data : cli))
+  const createProdutoFirebase = async ({ nome, preco, descricao, emPromocao, imagem }) => {
+    try {
+      await firebase.db.collection('produtos').add({
+        nome,
+        preco,
+        descricao,
+        emPromocao,
+        imagem
+      })
+      alert('Produto cadastrado')
+    } catch (error) {
+      alert(error)
+    }
   }
 
-  const deleteProduto = id => {
-    setProdutos(produtos.filter(cli => cli.id !== id))
+  const updateProduto = async (data) => {
+    try {
+      const dbRef = firebase.db.collection('produtos').doc(data.id)
+      await dbRef.set(data)
+
+      setProdutos(produtos.map(cli => cli.id == produto.id ? data : cli))
+      alert('Produto atualizado')
+    } catch (error) {
+      alert(error)
+    }
+  }
+
+  const deleteProduto = async (id) => {
+    try {
+      const dbRef = firebase.db.collection('produtos').doc(id)
+      await dbRef.delete()
+      alert('Produto deletado')
+    } catch (error) {
+      alert(error)
+    }
+
     removeCart(id)
   }
 
